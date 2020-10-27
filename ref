@@ -1,0 +1,146 @@
+const Restify = require("restify");
+
+let port = 8080;
+
+let server = Restify.createServer({ name: "mocks-container", handleUpgrades: true });
+
+/**
+ * Função privada para tratar métodos HTTP não esperados pela API exposta no Controlador.
+ * Trata especificamente o preflight executado por alguns navegadores.
+ * @param {object} req Objeto contendo os dados da requisição feita pelo client.
+ * @param {object} res Objeto contendo os dados da resposta a ser enviada ao client.
+ */
+function preflightHandler(restify, req, res) {
+    if (req.method !== "OPTIONS") {
+        return res.send(new restify.MethodNotAllowedError());
+    }
+
+    let headersPermitidos = [
+        // standard headers
+        "Accept",
+        "Accept-Version",
+        "Accept-Language",
+        "Authorization",
+        "Content-Type",
+        "User-Agent",
+        // custom headers
+        "Amc-Aplicacao",
+        "Amc-Message-Id",
+        "Amc-Session-Id",
+"amc-work-id",
+"bcsid",
+"buuid"
+    ];
+
+    if (res.methods.indexOf("OPTIONS") === -1) {
+        res.methods.push("OPTIONS");
+    }
+
+    res.header("Access-Control-Allow-Credentials", true);
+    res.header("Access-Control-Allow-Origin", req.headers.origin);
+    res.header("Access-Control-Allow-Methods", res.methods.join(", "));
+    res.header("Access-Control-Allow-Headers", headersPermitidos.join(", "));
+
+    return res.send(200);
+}
+
+server.use(Restify.queryParser({ mapParams: false }));
+server.use(Restify.bodyParser({ mapParams: false }));
+server.use(new Restify.CORS());
+server.on("MethodNotAllowed", (req, res) => preflightHandler(Restify, req, res));
+
+
+
+server.post("/periferico/heartbeat/eventoLogin", (req, res, next) => {
+    console.log("recebido chamada" + req.body);
+    res.send(200,
+        {
+deviceId: "1236",
+id: "1236",
+key: "1236",
+senha: "1236"
+        });
+
+    next();
+});
+
+server.post("periferico/heartbeat/start", (req, res, next) => {
+    console.log("recebido chamada" + req.body);
+    res.send(200,
+        {
+            "sucesso": true
+        });
+
+    next();
+});
+
+server.post("periferico/obterDNA", (req, res, next) => {
+    console.log("recebido chamada" + req.body);
+    res.send(200,
+        // {
+        //     id: "1234",
+        //     key: "abcd"
+        // }
+        {
+            "sucesso": true,
+            "key": "YxoBT3lZ\/RtD07jJJdPCQwNeosgfWblnnkdvFy6cf1fwI6FaBNZH5L1p0G+XrO169nxfiBP0bqhHU4c4r4roBdY9jvnO+0I12ODZ9E0ifJ98P65GQ6Ea\/dC9T5dyTSjmYCDccpMmZ7Nd0OMfA3PiTOho1TnRAd2sXyleF9+hx5I=",
+            "id": "VZq0iUeki717ZVQYa+o081S8w7\/2FRCkgD37lRhSA3cRhKzcGCRvXdbAGlayrC1QxjrJgjVs\n0fSjspE\/nc\/Paa5HqXpcQIgkniShemPeS4yqgXx1CaCYu5Hk8kWEgrtiQw4J9cTj06VPFK+l\n5Vg5YaQUMUheFs8YLZiP3Q1uAaY9myaKD9AH+k6DUm9JPFPxEhjzJyHhHTPTlQxj+RaopfSY\ny8lt9moFSZEpy34W8s\/REhKP3e7AW\/asxU5WRjR9EJZXA0UlUrNXTM2\/w5NTiveSNQahTx\/d\ngl2rDPg0bBHrigSpbezQC7\/eo8FgIT9XiGtKf9QyHcl48E+CJptgB80v+VZYPqqq4\/m3tTx2\nPFrZzicAqzeX3Vladd6RdSevIR\/um8aGpdugG3EL7pG7PwCEScN\/wlgqzqZl+Y2lpK+LnN3t\nvWWT07DgCT+TKnaJsYw+9QSAtgW6eDZxzcp++HnlBvoBCEKVy9wjhyvm+Us6F4706bXtjeCR\nclqOsE4JOMrjOW6TheAvI44DKXmHsZs3+lLFdzVr5fu5yWrlcAEiDYU9p0U2empIpnUS+Sm7\nu5rgOu7u1KH32FM4P8b5xq8en9tRMOnZXRvOQ98bYbLpAXNNtZJGuFR2\/+SGEFXTSZEEOQKA\nA+3WyfhrIekXEycSJi9HQ2LI7Rqh0VHyf94=\n"
+        }
+    );
+
+    next();
+});
+
+server.post("periferico/token/ativar", (req, res, next) => {
+    console.log("recebido chamada" + req.body);
+    res.send(200,
+        {
+            "sucesso": true
+        });
+
+    next();
+});
+
+server.get("periferico/token/obterSequencia", (req, res, next) => {
+    console.log("recebido chamada" + req.body);
+    res.send(200,
+        {
+            "tempoAteExpiracao": 20,
+            "sequencia": "12345689",
+            "serial": "12345678901234567890123456789023",
+            "sucesso": false
+        });
+
+    next();
+});
+
+server.get("periferico/token/identificador", (req, res, next) => {
+    console.log("recebido periferico/token/identificador");
+   
+    res.send(200,
+    {
+        "identificador": "123458",
+        "serialNumberMobile": "123458",
+        "sucesso": true,
+
+        "identificadorDispositivo": "14ca6050e3406d12a5e9f198",
+        "tipoDevice":"1"
+    });
+   
+    next();
+});
+
+server.del("periferico/token/desativar", (req, res, next) => {
+    console.log("recebido periferico/token/desativar");
+   
+    res.send(200,
+    {
+        "sucesso": true
+    });
+   
+    next();
+});
+
+server.listen(port, () => {
+    console.log("Servidor aberto na porta " + port);
+});
